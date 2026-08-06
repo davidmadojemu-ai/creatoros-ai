@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#090909">
+  <title>Legal Center — CreatorOS AI</title>
+  <style>
+    :root {
+      --bg: #090909;
+      --bg-soft: #0d0d10;
+      --panel: rgba(255, 255, 255, 0.045);
+      --line: rgba(255, 255, 255, 0.1);
+      --line-soft: rgba(255, 255, 255, 0.065);
+      --text: #f7f5ff;
+      --muted: #a7a3b3;
+      --accent: #ff6b4a;
+      --accent-2: #ff8f75;
+      --green: #55e5a4;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; background: var(--bg); }
+    body {
+      margin: 0;
+      min-width: 320px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.6;
+    }
+    a { color: inherit; text-decoration: none; }
+    .container { width: min(900px, calc(100% - 40px)); margin: 0 auto; }
+
+    .site-header {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      backdrop-filter: blur(20px) saturate(130%);
+      background: rgba(9, 9, 9, 0.85);
+      border-bottom: 1px solid var(--line-soft);
+    }
+    .navbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 14px 0;
+      flex-wrap: wrap;
+    }
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    .brand-mark {
+      width: 36px; height: 36px;
+      border-radius: 10px;
+      display: grid; place-items: center;
+      background: linear-gradient(135deg, #ff7a5c, #e85a3a);
+      color: white;
+      font-weight: 800;
+      font-size: 16px;
+    }
+    .brand-logo {
+      width: 40px;
+      height: 40px;
+      object-fit: contain;
+      border-radius: 8px;
+      display: block;
+    }
+    .brand b { color: var(--accent-2); }
+
+    .legal-nav {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .legal-nav a {
+      padding: 8px 14px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+      border: 1px solid transparent;
+      transition: color .2s, background .2s, border-color .2s, box-shadow .2s;
+    }
+    .legal-nav a:hover,
+    .legal-nav a.active {
+      color: white;
+      background: rgba(255, 107, 74, 0.12);
+      border-color: rgba(255, 107, 74, 0.35);
+      box-shadow: 0 0 20px rgba(255, 107, 74, 0.12);
+    }
+    .back-link {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+      padding: 8px 12px;
+      border-radius: 10px;
+      transition: color .2s;
+    }
+    .back-link:hover { color: white; }
+
+    .hero {
+      padding: 48px 0 24px;
+      text-align: center;
+    }
+    .hero .kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 12px;
+    }
+    .hero h1 {
+      margin: 0;
+      font-size: clamp(32px, 5vw, 48px);
+      letter-spacing: -0.04em;
+      line-height: 1.1;
+    }
+    .hero p {
+      margin: 12px auto 0;
+      max-width: 520px;
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    .section {
+      padding: 40px 0 48px;
+      border-top: 1px solid var(--line-soft);
+      scroll-margin-top: 90px;
+    }
+    .section-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 28px;
+    }
+    .section-header h2 {
+      margin: 0;
+      font-size: clamp(26px, 4vw, 34px);
+      letter-spacing: -0.03em;
+    }
+    .section-header .updated {
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 6px;
+    }
+    .cross-nav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .cross-nav a {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
+      padding: 6px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--line-soft);
+      background: var(--panel);
+      transition: color .2s, border-color .2s, background .2s;
+    }
+    .cross-nav a:hover {
+      color: white;
+      border-color: rgba(255, 107, 74, 0.4);
+      background: rgba(255, 107, 74, 0.1);
+    }
+
+    .legal-content {
+      color: #c8c4d0;
+      font-size: 15px;
+      line-height: 1.7;
+    }
+    .legal-content h2 {
+      margin: 2rem 0 0.75rem;
+      font-size: 1.25rem;
+      color: var(--text);
+      letter-spacing: -0.02em;
+    }
+    .legal-content h2:first-child { margin-top: 0; }
+    .legal-content p { margin: 0.75rem 0; }
+    .legal-content ul, .legal-content ol {
+      padding-left: 1.35rem;
+      margin: 0.75rem 0;
+    }
+    .legal-content li { margin-bottom: 0.45rem; }
+    .legal-content a {
+      color: var(--accent-2);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+    .legal-content a:hover { color: #ffb39a; }
+    .legal-content strong { color: #ebe7f2; }
+
+    .section-footer-nav {
+      margin-top: 36px;
+      padding-top: 20px;
+      border-top: 1px solid var(--line-soft);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .section-footer-nav span {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    footer {
+      border-top: 1px solid var(--line-soft);
+      padding: 28px 0 40px;
+      text-align: center;
+      color: #6a6572;
+      font-size: 12px;
+    }
+    footer a { color: var(--muted); }
+    footer a:hover { color: white; }
+
+    @media (max-width: 640px) {
+      .navbar { gap: 10px; }
+      .legal-nav { width: 100%; }
+      .legal-nav a { flex: 1; text-align: center; padding: 8px 10px; font-size: 12px; }
+      .section { scroll-margin-top: 120px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container navbar">
+      <a class="brand" href="CreatorOS_AI_Waitlist_Preview.html">
+        <img class="brand-logo" src="data:image/png;base64,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" alt="CreatorOS AI" width="36" height="36">
+        <span>CreatorOS <b>AI</b></span>
+      </a>
+      <nav class="legal-nav" aria-label="Legal sections">
+        <a href="#privacy" data-section="privacy">Privacy Policy</a>
+        <a href="#terms" data-section="terms">Terms of Service</a>
+        <a href="#refund" data-section="refund">Refund Policy</a>
+      </nav>
+      <a class="back-link" href="CreatorOS_AI_Waitlist_Preview.html">← Back to Site</a>
+    </div>
+  </header>
+
+  <main>
+    <div class="container hero">
+      <div class="kicker"><span>✦</span> Legal Center</div>
+      <h1>Policies &amp; Terms</h1>
+      <p>Everything you need to know about privacy, terms of use, and refunds — in one place.</p>
+    </div>
+
+    <!-- PRIVACY -->
+    <section class="section" id="privacy">
+      <div class="container">
+        <div class="section-header">
+          <div>
+            <h2>Privacy Policy</h2>
+            <div class="updated">Last updated: July 31, 2026</div>
+          </div>
+          <div class="cross-nav">
+            <a href="#terms">Terms of Service</a>
+            <a href="#refund">Refund Policy</a>
+          </div>
+        </div>
+        <div class="legal-content">
+<p>CreatorOS AI ("we", "us", "our") respects your privacy. This Privacy Policy explains how we collect, use, and protect your information when you use our website and services (the "Service").</p>
+
+            <h2>1. Information We Collect</h2>
+            <ul class="list-disc">
+                <li><strong>Account Information</strong>: Name, email address, and payment information (processed by Flutterwave).</li>
+                <li><strong>Usage Data</strong>: Prompts, generated content, credits used, and interaction history.</li>
+                <li><strong>Technical Data</strong>: IP address, browser type, device information, and analytics.</li>
+                <li><strong>Content</strong>: Scripts, titles, thumbnails, and other AI-generated materials you create.</li>
+            </ul>
+
+            <h2>2. How We Use Your Information</h2>
+            <ul class="list-disc">
+                <li>To provide and improve the Service (script generation, analysis, etc.)</li>
+                <li>To process payments and manage subscriptions</li>
+                <li>To communicate with you about your account and updates</li>
+                <li>To enforce our Terms of Service and prevent abuse</li>
+            </ul>
+
+            <h2>3. Sharing Your Information</h2>
+            <p>We do not sell your personal data. We may share information with:</p>
+            <ul class="list-disc">
+                <li>Flutterwave (for payment processing)</li>
+                <li>Service providers who help us operate the platform</li>
+                <li>Law enforcement when required by law</li>
+            </ul>
+
+            <h2>4. Data Security</h2>
+            <p>We use industry-standard encryption and security measures. However, no system is 100% secure.</p>
+
+            <h2>5. Your Rights</h2>
+            <p>You can:</p>
+            <ul class="list-disc">
+                <li>Access, update, or delete your account data</li>
+                <li>Request export of your data</li>
+                <li>Opt out of marketing communications</li>
+            </ul>
+            <p>Contact us at <a href="mailto:creatorosaisupport@gmail.com" class="text-violet-400 hover:underline">creatorosaisupport@gmail.com</a> to exercise these rights.</p>
+
+            <h2>6. Data Retention</h2>
+            <p>We retain your data as long as your account is active or as needed for legal purposes.</p>
+
+            <h2>7. Changes to this Policy</h2>
+            <p>We may update this policy. We will notify you of significant changes.</p>
+        </div>
+        <div class="section-footer-nav">
+          <span>Continue reading</span>
+          <div class="cross-nav">
+            <a href="#terms">Terms of Service →</a>
+            <a href="#refund">Refund Policy →</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TERMS -->
+    <section class="section" id="terms">
+      <div class="container">
+        <div class="section-header">
+          <div>
+            <h2>Terms of Service</h2>
+            <div class="updated">Last updated: July 31, 2026</div>
+          </div>
+          <div class="cross-nav">
+            <a href="#privacy">Privacy Policy</a>
+            <a href="#refund">Refund Policy</a>
+          </div>
+        </div>
+        <div class="legal-content">
+<p>By using CreatorOS AI, you agree to these Terms of Service.</p>
+
+            <h2>1. The Service</h2>
+            <p>CreatorOS AI provides AI-powered tools for content creators, including scripts, titles, thumbnails, analysis, and more.</p>
+
+            <h2>2. User Accounts</h2>
+            <ul class="list-disc">
+                <li>You must be at least 18 years old to use the Service.</li>
+                <li>You are responsible for keeping your account secure.</li>
+                <li>You may not share your account or use it for illegal purposes.</li>
+            </ul>
+
+            <h2>3. Usage Limits</h2>
+            <p>Free plan: Limited credits per month.<br>
+            Paid plans: Credits as specified at signup.<br>
+            We may suspend accounts that violate fair usage.</p>
+
+            <h2>4. Content Ownership</h2>
+            <p>You own the content you generate. You grant us a license to use it for improving our models (anonymized).</p>
+
+            <h2>5. Payments and Subscriptions</h2>
+            <ul class="list-disc">
+                <li>All payments are processed by Flutterwave.</li>
+                <li>Subscriptions auto-renew. You can cancel anytime from your account.</li>
+                <li>No refunds except as required by law (see Refund Policy).</li>
+            </ul>
+
+            <h2>6. Acceptable Use</h2>
+            <p>You may not use the Service for illegal or harmful activities, attempt to reverse-engineer our models, or generate harmful/misleading content.</p>
+
+            <h2>7. Termination</h2>
+            <p>We may suspend or terminate accounts for violations of these Terms.</p>
+
+            <h2>8. Limitation of Liability</h2>
+            <p>The Service is provided "as is". We are not liable for any indirect damages.</p>
+
+            <h2>9. Governing Law</h2>
+            <p>These Terms are governed by the laws of Nigeria (or your applicable jurisdiction).</p>
+        </div>
+        <div class="section-footer-nav">
+          <span>Continue reading</span>
+          <div class="cross-nav">
+            <a href="#privacy">← Privacy Policy</a>
+            <a href="#refund">Refund Policy →</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- REFUND -->
+    <section class="section" id="refund">
+      <div class="container">
+        <div class="section-header">
+          <div>
+            <h2>Refund Policy</h2>
+            <div class="updated">Last updated: July 31, 2026</div>
+          </div>
+          <div class="cross-nav">
+            <a href="#privacy">Privacy Policy</a>
+            <a href="#terms">Terms of Service</a>
+          </div>
+        </div>
+        <div class="legal-content">
+<h2>General Policy</h2>
+            <ul class="list-disc">
+                <li><strong>Starter (Free) Plan</strong>: No charges, no refunds needed.</li>
+                <li><strong>Paid Plans</strong>: We offer a <strong>14-day money-back guarantee</strong> from the date of purchase if you are not satisfied.</li>
+            </ul>
+
+            <h2>How to Request a Refund</h2>
+            <ol class="list-decimal">
+                <li>Email <a href="mailto:creatorosaisupport@gmail.com" class="text-violet-400 hover:underline">creatorosaisupport@gmail.com</a> within 14 days of purchase.</li>
+                <li>Include your account email and reason for the request.</li>
+                <li>We will review and process eligible refunds within 5 business days.</li>
+            </ol>
+
+            <h2>Non-Refundable Cases</h2>
+            <ul class="list-disc">
+                <li>Refunds are not provided after 14 days.</li>
+                <li>Refunds are not provided for violations of our Terms of Service.</li>
+                <li>Partial usage does not qualify for a full refund.</li>
+            </ul>
+
+            <h2>Subscription Cancellation</h2>
+            <p>You can cancel your subscription at any time from your account settings. You will retain access until the end of the current billing period. No prorated refunds for cancellations.</p>
+        </div>
+        <div class="section-footer-nav">
+          <span>Continue reading</span>
+          <div class="cross-nav">
+            <a href="#privacy">← Privacy Policy</a>
+            <a href="#terms">← Terms of Service</a>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">
+      © 2026 CreatorOS AI. All rights reserved.<br>
+      <a href="CreatorOS_AI_Waitlist_Preview.html">Back to homepage</a>
+      ·
+      <a href="mailto:creatorosaisupport@gmail.com">creatorosaisupport@gmail.com</a>
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      const links = document.querySelectorAll('.legal-nav a[data-section]');
+      const sections = ['privacy', 'terms', 'refund'].map(id => document.getElementById(id));
+
+      function setActive() {
+        let current = 'privacy';
+        const offset = 120;
+        for (const sec of sections) {
+          if (!sec) continue;
+          if (sec.getBoundingClientRect().top <= offset) current = sec.id;
+        }
+        links.forEach(a => {
+          a.classList.toggle('active', a.dataset.section === current);
+        });
+      }
+
+      window.addEventListener('scroll', setActive, { passive: true });
+      setActive();
+
+      // If opened with hash, ensure active state after layout
+      if (location.hash) {
+        setTimeout(setActive, 50);
+      }
+    })();
+  </script>
+</body>
+</html>
