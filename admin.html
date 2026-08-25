@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#09090b">
+  <title>Admin — CreatorOS AI</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root {
+      --bg: #09090b;
+      --panel: #121214;
+      --panel-2: #18181b;
+      --border: rgba(255,255,255,.08);
+      --text: #fafafa;
+      --muted: #a1a1aa;
+      --accent: #ff6b4a;
+      --accent-2: #ff8f75;
+      --green: #34d399;
+      --blue: #60a5fa;
+      --purple: #a78bfa;
+      --radius: 14px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.5;
+    }
+    a { color: inherit; text-decoration: none; }
+    button, input { font: inherit; }
+
+    /* Login */
+    #login-view {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background: radial-gradient(ellipse at 50% 0%, rgba(255,107,74,.12), transparent 50%);
+    }
+    .login-card {
+      width: min(400px, 100%);
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 32px 28px;
+      box-shadow: 0 24px 80px rgba(0,0,0,.45);
+    }
+    .login-card h1 {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -.02em;
+      margin-bottom: 6px;
+    }
+    .login-card p.sub {
+      color: var(--muted);
+      font-size: 14px;
+      margin-bottom: 24px;
+    }
+    .login-card label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+    }
+    .login-card input {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      margin-bottom: 16px;
+      outline: none;
+    }
+    .login-card input:focus {
+      border-color: rgba(255,107,74,.5);
+      box-shadow: 0 0 0 3px rgba(255,107,74,.12);
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      min-height: 44px;
+      padding: 0 18px;
+      border: 0;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #ff7a5c, #e85a3a);
+      color: #fff;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      transition: opacity .15s, transform .15s;
+    }
+    .btn:hover { opacity: .92; }
+    .btn:disabled { opacity: .5; cursor: not-allowed; }
+    .btn-ghost {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+    .btn-ghost:hover { color: var(--text); border-color: rgba(255,255,255,.2); }
+    .msg {
+      margin-top: 14px;
+      font-size: 13px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      display: none;
+    }
+    .msg.show { display: block; }
+    .msg.error { background: rgba(239,68,68,.12); color: #fca5a5; border: 1px solid rgba(239,68,68,.25); }
+    .msg.ok { background: rgba(52,211,153,.1); color: #6ee7b7; border: 1px solid rgba(52,211,153,.25); }
+    .msg.info { background: rgba(96,165,250,.1); color: #93c5fd; border: 1px solid rgba(96,165,250,.25); }
+
+    /* Dashboard shell */
+    #dash-view { display: none; min-height: 100vh; }
+    .shell {
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      min-height: 100vh;
+    }
+    @media (max-width: 860px) {
+      .shell { grid-template-columns: 1fr; }
+      .sidebar { display: none; }
+      .sidebar.open { display: flex; position: fixed; inset: 0; z-index: 50; }
+    }
+
+    .sidebar {
+      background: var(--panel);
+      border-right: 1px solid var(--border);
+      padding: 20px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px 18px;
+      font-weight: 700;
+      font-size: 15px;
+    }
+    .brand span { color: var(--accent-2); }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      border: 0;
+      background: transparent;
+      width: 100%;
+      text-align: left;
+    }
+    .nav-item:hover, .nav-item.active {
+      background: rgba(255,255,255,.05);
+      color: var(--text);
+    }
+    .nav-item.active { background: rgba(255,107,74,.12); color: var(--accent-2); }
+    .sidebar-footer {
+      margin-top: auto;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+    .user-chip {
+      font-size: 12px;
+      color: var(--muted);
+      padding: 8px 10px;
+      word-break: break-all;
+    }
+
+    .main {
+      padding: 24px 28px 48px;
+      overflow-x: hidden;
+    }
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+    }
+    .topbar h1 {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -.02em;
+    }
+    .topbar .actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+    .menu-btn {
+      display: none;
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+    @media (max-width: 860px) {
+      .menu-btn { display: grid; place-items: center; }
+      .main { padding: 16px; }
+    }
+
+    .period-tabs {
+      display: flex;
+      gap: 4px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 3px;
+    }
+    .period-tabs button {
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      padding: 6px 12px;
+      border-radius: 7px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .period-tabs button.active {
+      background: rgba(255,255,255,.08);
+      color: var(--text);
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 14px;
+      margin-bottom: 28px;
+    }
+    .stat-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 16px;
+    }
+    .stat-card .label {
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      margin-bottom: 8px;
+    }
+    .stat-card .value {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -.03em;
+    }
+    .stat-card .hint {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+    .stat-card.accent .value { color: var(--accent-2); }
+    .stat-card.green .value { color: var(--green); }
+    .stat-card.blue .value { color: var(--blue); }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+    .panel-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .panel-head h2 {
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .panel-body { padding: 0; }
+    .table-wrap { overflow-x: auto; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    th, td {
+      text-align: left;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    th {
+      color: var(--muted);
+      font-weight: 600;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      background: rgba(0,0,0,.2);
+    }
+    tr:last-child td { border-bottom: 0; }
+    tr:hover td { background: rgba(255,255,255,.02); }
+    .empty {
+      padding: 40px 16px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .badge {
+      display: inline-flex;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 600;
+      background: rgba(52,211,153,.12);
+      color: var(--green);
+    }
+    .loading {
+      padding: 32px;
+      text-align: center;
+      color: var(--muted);
+    }
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+  <!-- LOGIN -->
+  <div id="login-view">
+    <div class="login-card">
+      <h1>CreatorOS Admin</h1>
+      <p class="sub">Sign in with your authorized admin email.</p>
+      <form id="login-form">
+        <label for="email">Email</label>
+        <input id="email" type="email" required placeholder="admin@example.com" autocomplete="email">
+        <label for="password">Password</label>
+        <input id="password" type="password" required placeholder="••••••••" autocomplete="current-password">
+        <button class="btn" type="submit" id="login-btn">Sign in</button>
+      </form>
+      <div class="msg" id="login-msg"></div>
+      <p style="margin-top:18px;font-size:12px;color:var(--muted);text-align:center">
+        Only the authorized admin account can access this dashboard.
+      </p>
+    </div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="dash-view">
+    <div class="shell">
+      <aside class="sidebar" id="sidebar">
+        <div class="brand">CreatorOS <span>AI</span></div>
+        <button class="nav-item active" data-view="overview">Overview</button>
+        <button class="nav-item" data-view="waitlist">Waitlist</button>
+        <button class="nav-item" data-view="analytics">Analytics</button>
+        <div class="sidebar-footer">
+          <div class="user-chip" id="user-email"></div>
+          <button class="nav-item" id="logout-btn" style="margin-top:4px">Sign out</button>
+          <a class="nav-item" href="/" style="margin-top:2px">← Public site</a>
+        </div>
+      </aside>
+
+      <main class="main">
+        <div class="topbar">
+          <div style="display:flex;align-items:center;gap:10px">
+            <button class="menu-btn" id="menu-btn" aria-label="Menu">☰</button>
+            <h1 id="page-title">Overview</h1>
+          </div>
+          <div class="actions">
+            <div class="period-tabs" id="period-tabs">
+              <button data-period="day" class="active">Day</button>
+              <button data-period="week">Week</button>
+              <button data-period="month">Month</button>
+              <button data-period="year">Year</button>
+            </div>
+            <button class="btn" style="width:auto;min-height:36px;padding:0 14px;font-size:13px" id="refresh-btn">Refresh</button>
+          </div>
+        </div>
+
+        <!-- Overview -->
+        <section id="view-overview">
+          <div class="stats">
+            <div class="stat-card accent">
+              <div class="label">Waitlist total</div>
+              <div class="value" id="stat-total">—</div>
+              <div class="hint">All-time signups</div>
+            </div>
+            <div class="stat-card green">
+              <div class="label">This period</div>
+              <div class="value" id="stat-period">—</div>
+              <div class="hint" id="stat-period-hint">Selected range</div>
+            </div>
+            <div class="stat-card blue">
+              <div class="label">Visitors</div>
+              <div class="value">—</div>
+              <div class="hint">Connect Vercel Analytics</div>
+            </div>
+            <div class="stat-card">
+              <div class="label">Revenue</div>
+              <div class="value">$0.00</div>
+              <div class="hint">No payments yet</div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head">
+              <h2>Recent waitlist signups</h2>
+            </div>
+            <div class="panel-body">
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Email</th>
+                      <th>Joined</th>
+                    </tr>
+                  </thead>
+                  <tbody id="recent-tbody">
+                    <tr><td colspan="3" class="loading">Loading…</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Waitlist full -->
+        <section id="view-waitlist" class="hidden">
+          <div class="panel">
+            <div class="panel-head">
+              <h2>All waitlist entries</h2>
+              <span style="font-size:12px;color:var(--muted)" id="waitlist-count-label"></span>
+            </div>
+            <div class="panel-body">
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>Name</th>
+                      <th>Email</th>
+                      <th>Joined</th>
+                    </tr>
+                  </thead>
+                  <tbody id="full-tbody">
+                    <tr><td colspan="4" class="loading">Loading…</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Analytics placeholder -->
+        <section id="view-analytics" class="hidden">
+          <div class="stats">
+            <div class="stat-card">
+              <div class="label">Page views</div>
+              <div class="value">—</div>
+              <div class="hint">Requires Vercel Analytics API</div>
+            </div>
+            <div class="stat-card">
+              <div class="label">Unique visitors</div>
+              <div class="value">—</div>
+              <div class="hint">Requires Vercel Analytics API</div>
+            </div>
+            <div class="stat-card">
+              <div class="label">Top page</div>
+              <div class="value" style="font-size:18px">/</div>
+              <div class="hint">Homepage</div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h2>Analytics</h2></div>
+            <div class="panel-body">
+              <div class="empty">
+                Visitor analytics will appear here once Vercel Analytics is connected and an API token is configured as an environment variable.<br><br>
+                Waitlist signup counts above are live from Supabase.
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+<script>
+(function () {
+  const SUPABASE_URL = "https://kcjbblafkwhnhgpoyadc.supabase.co";
+  const SUPABASE_ANON_KEY = "sb_publishable_CutDUdxWEr6ikT4zS6nScA_wSq6dU8B";
+  const ADMIN_EMAIL = "creatorosaisupport@gmail.com";
+
+  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  const loginView = document.getElementById("login-view");
+  const dashView = document.getElementById("dash-view");
+  const loginForm = document.getElementById("login-form");
+  const loginMsg = document.getElementById("login-msg");
+  const loginBtn = document.getElementById("login-btn");
+  const userEmailEl = document.getElementById("user-email");
+  const recentTbody = document.getElementById("recent-tbody");
+  const fullTbody = document.getElementById("full-tbody");
+  const statTotal = document.getElementById("stat-total");
+  const statPeriod = document.getElementById("stat-period");
+  const statPeriodHint = document.getElementById("stat-period-hint");
+  const waitlistCountLabel = document.getElementById("waitlist-count-label");
+  const pageTitle = document.getElementById("page-title");
+  const sidebar = document.getElementById("sidebar");
+  const menuBtn = document.getElementById("menu-btn");
+
+  let currentPeriod = "day";
+  let allRows = [];
+
+  function showMsg(el, text, type) {
+    el.textContent = text;
+    el.className = "msg show " + type;
+  }
+
+  function formatDate(iso) {
+    if (!iso) return "—";
+    try {
+      const d = new Date(iso);
+      return d.toLocaleString(undefined, {
+        year: "numeric", month: "short", day: "numeric",
+        hour: "2-digit", minute: "2-digit"
+      });
+    } catch (e) { return iso; }
+  }
+
+  function periodStart(period) {
+    const now = new Date();
+    const d = new Date(now);
+    if (period === "day") {
+      d.setHours(0, 0, 0, 0);
+    } else if (period === "week") {
+      const day = d.getDay();
+      const diff = (day + 6) % 7; // Monday start
+      d.setDate(d.getDate() - diff);
+      d.setHours(0, 0, 0, 0);
+    } else if (period === "month") {
+      d.setDate(1);
+      d.setHours(0, 0, 0, 0);
+    } else if (period === "year") {
+      d.setMonth(0, 1);
+      d.setHours(0, 0, 0, 0);
+    }
+    return d;
+  }
+
+  function isAuthorized(session) {
+    if (!session || !session.user || !session.user.email) return false;
+    return session.user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase();
+  }
+
+  async function requireAuth() {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session || !isAuthorized(session)) {
+      if (session && !isAuthorized(session)) {
+        await supabase.auth.signOut();
+      }
+      showLogin();
+      return null;
+    }
+    showDash(session);
+    return session;
+  }
+
+  function showLogin() {
+    loginView.style.display = "grid";
+    dashView.style.display = "none";
+  }
+
+  function showDash(session) {
+    loginView.style.display = "none";
+    dashView.style.display = "block";
+    userEmailEl.textContent = session.user.email;
+    loadData();
+  }
+
+  loginForm.addEventListener("submit", async function (e) {
+    e.preventDefault();
+    loginMsg.className = "msg";
+    const email = (document.getElementById("email").value || "").trim().toLowerCase();
+    const password = document.getElementById("password").value || "";
+
+    if (email !== ADMIN_EMAIL.toLowerCase()) {
+      showMsg(loginMsg, "This email is not authorized for admin access.", "error");
+      return;
+    }
+
+    loginBtn.disabled = true;
+    loginBtn.textContent = "Signing in…";
+
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) {
+        // If user doesn't exist yet, try to give clear guidance
+        showMsg(loginMsg, error.message + " — Create this user in Supabase Auth first (see setup notes).", "error");
+        loginBtn.disabled = false;
+        loginBtn.textContent = "Sign in";
+        return;
+      }
+      if (!isAuthorized(data.session)) {
+        await supabase.auth.signOut();
+        showMsg(loginMsg, "Unauthorized account.", "error");
+        loginBtn.disabled = false;
+        loginBtn.textContent = "Sign in";
+        return;
+      }
+      showDash(data.session);
+    } catch (err) {
+      showMsg(loginMsg, "Network error. Try again.", "error");
+      loginBtn.disabled = false;
+      loginBtn.textContent = "Sign in";
+    }
+  });
+
+  document.getElementById("logout-btn").addEventListener("click", async function () {
+    await supabase.auth.signOut();
+    showLogin();
+  });
+
+  // Nav
+  document.querySelectorAll(".nav-item[data-view]").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      document.querySelectorAll(".nav-item[data-view]").forEach(function (b) { b.classList.remove("active"); });
+      btn.classList.add("active");
+      const view = btn.getAttribute("data-view");
+      document.getElementById("view-overview").classList.toggle("hidden", view !== "overview");
+      document.getElementById("view-waitlist").classList.toggle("hidden", view !== "waitlist");
+      document.getElementById("view-analytics").classList.toggle("hidden", view !== "analytics");
+      pageTitle.textContent = view === "overview" ? "Overview" : view === "waitlist" ? "Waitlist" : "Analytics";
+      sidebar.classList.remove("open");
+    });
+  });
+
+  menuBtn.addEventListener("click", function () {
+    sidebar.classList.toggle("open");
+  });
+
+  document.querySelectorAll("#period-tabs button").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      document.querySelectorAll("#period-tabs button").forEach(function (b) { b.classList.remove("active"); });
+      btn.classList.add("active");
+      currentPeriod = btn.getAttribute("data-period");
+      updatePeriodStats();
+    });
+  });
+
+  document.getElementById("refresh-btn").addEventListener("click", loadData);
+
+  function renderRows(tbody, rows, withIndex) {
+    if (!rows || rows.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="' + (withIndex ? 4 : 3) + '" class="empty">No signups yet.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = rows.map(function (r, i) {
+      const name = r.full_name || "—";
+      const email = r.email || "—";
+      const joined = formatDate(r.created_at);
+      if (withIndex) {
+        return "<tr><td>" + (i + 1) + "</td><td>" + escapeHtml(name) + "</td><td>" + escapeHtml(email) + "</td><td>" + joined + "</td></tr>";
+      }
+      return "<tr><td>" + escapeHtml(name) + "</td><td>" + escapeHtml(email) + "</td><td>" + joined + "</td></tr>";
+    }).join("");
+  }
+
+  function escapeHtml(s) {
+    return String(s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  function updatePeriodStats() {
+    const start = periodStart(currentPeriod);
+    const count = allRows.filter(function (r) {
+      if (!r.created_at) return false;
+      return new Date(r.created_at) >= start;
+    }).length;
+    statPeriod.textContent = count;
+    const labels = { day: "Today", week: "This week", month: "This month", year: "This year" };
+    statPeriodHint.textContent = labels[currentPeriod] || "Selected range";
+  }
+
+  async function loadData() {
+    recentTbody.innerHTML = '<tr><td colspan="3" class="loading">Loading…</td></tr>';
+    fullTbody.innerHTML = '<tr><td colspan="4" class="loading">Loading…</td></tr>';
+    statTotal.textContent = "—";
+    statPeriod.textContent = "—";
+
+    // Prefer authenticated request; fall back to anon if RLS allows
+    const { data, error } = await supabase
+      .from("waitlist")
+      .select("id, full_name, email, created_at")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      recentTbody.innerHTML = '<tr><td colspan="3" class="empty">Could not load waitlist. Check Supabase RLS policies (see setup notes).<br><small style="opacity:.7">' + escapeHtml(error.message) + "</small></td></tr>";
+      fullTbody.innerHTML = '<tr><td colspan="4" class="empty">Could not load waitlist.</td></tr>';
+      return;
+    }
+
+    allRows = data || [];
+    statTotal.textContent = allRows.length;
+    waitlistCountLabel.textContent = allRows.length + " total";
+    updatePeriodStats();
+    renderRows(recentTbody, allRows.slice(0, 10), false);
+    renderRows(fullTbody, allRows, true);
+  }
+
+  // Auth state listener
+  supabase.auth.onAuthStateChange(function (event, session) {
+    if (event === "SIGNED_OUT") {
+      showLogin();
+    } else if (session && isAuthorized(session)) {
+      showDash(session);
+    }
+  });
+
+  // Init
+  requireAuth();
+})();
+</script>
+</body>
+</html>
