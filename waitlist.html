@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#090909">
+  <title>Join Waitlist — CreatorOS AI</title>
+  <style>
+    :root {
+      --bg: #090909; --line: rgba(255,255,255,.1); --line-soft: rgba(255,255,255,.065);
+      --text: #f7f5ff; --muted: #a7a3b3; --green: #55e5a4;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; min-height: 100%; background: var(--bg); color: var(--text);
+      font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    a { color: inherit; text-decoration: none; }
+    .wrap {
+      min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 40px 20px;
+      background: radial-gradient(circle at 50% 0%, rgba(255,107,74,.14), transparent 40%), var(--bg);
+    }
+    .card {
+      width: min(440px, 100%); padding: 36px 28px 32px;
+      border: 1px solid rgba(255,140,110,.28); border-radius: 28px;
+      background: linear-gradient(160deg, rgba(255,107,74,.08), rgba(255,255,255,.03) 40%, rgba(12,12,16,.9));
+      box-shadow: 0 40px 100px rgba(0,0,0,.45); text-align: center;
+    }
+    .logo { width: 64px; height: 64px; margin: 0 auto 18px; object-fit: contain; }
+    .kicker { display: inline-flex; gap: 6px; font-size: 11px; font-weight: 700; letter-spacing: .12em;
+      text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+    h1 { margin: 0; font-size: 28px; letter-spacing: -.03em; }
+    .sub { margin: 12px 0 0; color: var(--muted); font-size: 14px; line-height: 1.55; }
+    form { margin-top: 26px; text-align: left; display: flex; flex-direction: column; gap: 12px; }
+    label { font-size: 12px; font-weight: 600; color: var(--muted); }
+    input {
+      width: 100%; margin-top: 6px; padding: 13px 14px; border: 1px solid var(--line); border-radius: 14px;
+      background: rgba(10,10,14,.75); color: white; font-size: 15px; outline: none;
+    }
+    input:focus { border-color: rgba(255,107,74,.55); box-shadow: 0 0 0 3px rgba(255,107,74,.12); }
+    .btn {
+      margin-top: 8px; width: 100%; min-height: 50px; border: 0; border-radius: 14px; cursor: pointer;
+      background: linear-gradient(135deg, #ff7a5c 0%, #e85a3a 45%, #ff8f6a 100%);
+      color: white; font-size: 15px; font-weight: 700; box-shadow: 0 12px 32px rgba(230,90,60,.32);
+    }
+    .btn:disabled { opacity: .65; cursor: not-allowed; }
+    .error {
+      display: none; margin-top: 4px; padding: 12px 14px; border: 1px solid rgba(255,90,90,.4);
+      border-radius: 12px; background: rgba(255,70,70,.1); color: #ffb4b4; font-size: 13px; font-weight: 600;
+    }
+    .error.show { display: block; }
+    .success-view { display: none; }
+    .success-view.show { display: block; }
+    .form-view.hide { display: none; }
+    .check {
+      width: 72px; height: 72px; margin: 8px auto 18px; border-radius: 50%;
+      background: rgba(85,229,164,.12); border: 1px solid rgba(85,229,164,.35);
+      display: grid; place-items: center; color: var(--green); font-size: 34px;
+    }
+    .success-msg { margin: 0; font-size: 16px; line-height: 1.55; color: #d8d4e0; }
+    .success-msg strong { color: white; }
+    .home-btn {
+      display: inline-flex; margin-top: 24px; min-height: 48px; padding: 0 22px; border-radius: 14px;
+      border: 1px solid var(--line); background: rgba(255,255,255,.05); color: white; font-weight: 700; font-size: 14px;
+    }
+    .stay { margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--line-soft); }
+    .stay h3 { margin: 0 0 6px; font-size: 15px; }
+    .stay p { margin: 0 0 16px; color: var(--muted); font-size: 13px; }
+    .socials { display: flex; justify-content: center; gap: 12px; }
+    .socials a {
+      width: 46px; height: 46px; display: grid; place-items: center; border-radius: 14px;
+      border: 1px solid var(--line-soft); background: rgba(255,255,255,.04); color: #c5c0cd;
+    }
+    .socials svg { width: 20px; height: 20px; }
+    .back-top { margin-top: 28px; font-size: 13px; font-weight: 600; color: var(--muted); }
+    .debug { margin-top: 12px; font-size: 11px; color: #6a6572; word-break: break-all; text-align: left; display: none; }
+    .debug.show { display: block; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <img class="logo" src="data:image/png;base64,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" alt="CreatorOS AI">
+
+      <div class="form-view" id="form-view">
+        <div class="kicker"><span>✦</span> Early Access</div>
+        <h1>Join the Waitlist</h1>
+        <p class="sub">Enter your details to get early access, launch updates, and founder benefits.</p>
+        <form id="reg-form" novalidate>
+          <div>
+            <label for="name">Full Name</label>
+            <input id="name" name="name" type="text" placeholder="Your full name" required autocomplete="name">
+          </div>
+          <div>
+            <label for="email">Email Address</label>
+            <input id="email" name="email" type="email" placeholder="you@example.com" required autocomplete="email">
+          </div>
+          <div class="error" id="error" role="alert"></div>
+          <div class="debug" id="debug"></div>
+          <button class="btn" type="submit" id="submit-btn">Join Waitlist</button>
+        </form>
+      </div>
+
+      <div class="success-view" id="success-view">
+        <div class="check" aria-hidden="true">✓</div>
+        <p class="success-msg"><strong>You are officially on the waitlist!</strong><br>You will be notified when the platform launches.</p>
+        <a class="home-btn" href="/">Return to Home</a>
+        <div class="stay">
+          <h3>Stay Connected</h3>
+          <p>Follow CreatorOS AI for launch updates.</p>
+          <div class="socials">
+            <a href="https://x.com/creatoros_ai?s=11" target="_blank" rel="noopener noreferrer" aria-label="X">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.727-8.835L1.254 2.25H8.08l4.253 5.622L18.244 2.25zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77z"/></svg>
+            </a>
+            <a href="https://www.instagram.com/creatoros_.ai/" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+            </a>
+            <a href="https://www.facebook.com/share/1DFVJ6NwgN/?mibextid=wwXIfr" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.41c0-3.025 1.792-4.697 4.533-4.697 1.312 0 2.686.236 2.686.236v2.97h-1.513c-1.491 0-1.956.93-1.956 1.886v2.27h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z"/></svg>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <a class="back-top" href="/">← Back to CreatorOS AI</a>
+  </div>
+
+  <script>
+  const SUPABASE_URL = "https://kcjbblafkwhnhgpoyadc.supabase.co";
+  const SUPABASE_KEY = "sb_publishable_CutDUdxWEr6ikT4zS6nScA_wSq6dU8B";
+  const STORAGE_KEY = "creatoros_waitlist_emails";
+
+  const form = document.getElementById("reg-form");
+  const errorEl = document.getElementById("error");
+  const debugEl = document.getElementById("debug");
+  const formView = document.getElementById("form-view");
+  const successView = document.getElementById("success-view");
+  const submitBtn = document.getElementById("submit-btn");
+
+  function showError(msg, debug) {
+    errorEl.textContent = msg;
+    errorEl.classList.add("show");
+    if (debug) {
+      debugEl.textContent = debug;
+      debugEl.classList.add("show");
+    }
+  }
+
+  function getLocal() {
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); } catch (e) { return []; }
+  }
+  function saveLocal(email, name, ts) {
+    const list = getLocal();
+    list.push({ email: email.toLowerCase(), name: name, ts: ts });
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+  }
+  function isLocalDup(email) {
+    const e = email.toLowerCase().trim();
+    return getLocal().some(function (x) { return (x.email || x) === e; });
+  }
+
+  async function insertRow(name, email) {
+    const res = await fetch(SUPABASE_URL + "/rest/v1/waitlist", {
+      method: "POST",
+      headers: {
+        "apikey": SUPABASE_KEY,
+        "Authorization": "Bearer " + SUPABASE_KEY,
+        "Content-Type": "application/json",
+        "Prefer": "return=representation"
+      },
+      body: JSON.stringify([{ full_name: name, email: email.toLowerCase() }])
+    });
+    const text = await res.text();
+    let data = null;
+    try { data = text ? JSON.parse(text) : null; } catch (e) { data = text; }
+
+    if (res.status === 409 || (typeof text === "string" && /duplicate|unique/i.test(text))) {
+      return { ok: false, duplicate: true, raw: text };
+    }
+    if (!res.ok) {
+      return { ok: false, duplicate: false, status: res.status, raw: text };
+    }
+    return { ok: true, data: data };
+  }
+
+  form.addEventListener("submit", async function (e) {
+    e.preventDefault();
+    errorEl.classList.remove("show");
+    debugEl.classList.remove("show");
+    errorEl.textContent = "";
+    debugEl.textContent = "";
+
+    const name = (form.name.value || "").trim();
+    const email = (form.email.value || "").trim();
+
+    if (!name) { showError("Please enter your full name."); return; }
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      showError("Please enter a valid email address."); return;
+    }
+    if (isLocalDup(email)) {
+      showError("This email is already registered. Please use another email."); return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Joining…";
+    const ts = new Date().toISOString();
+
+    try {
+      const result = await insertRow(name, email);
+
+      if (result.duplicate) {
+        showError("This email is already registered. Please use another email.");
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Join Waitlist";
+        return;
+      }
+
+      if (!result.ok) {
+        showError(
+          "Could not save to database. Please try again.",
+          "HTTP " + (result.status || "?") + " — " + String(result.raw).slice(0, 200)
+        );
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Join Waitlist";
+        return;
+      }
+
+      saveLocal(email, name, ts);
+
+      // Email founder with signup details
+      await notifyFounder(name, email, ts);
+
+      formView.classList.add("hide");
+      successView.classList.add("show");
+    } catch (err) {
+      showError(
+        "Network error. If you opened this as a local file, host it online (or use Live Server) so Supabase can be reached.",
+        String(err && err.message ? err.message : err)
+      );
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Join Waitlist";
+    }
+  });
+
+  // Send signup details to company email (FormSubmit)
+  // First successful hosted submit sends an activation email to the inbox — click it once.
+  function notifyFounder(name, email, ts) {
+    return new Promise(function (resolve) {
+      try {
+        var iframe = document.getElementById("founder-mail-frame");
+        if (!iframe) {
+          iframe = document.createElement("iframe");
+          iframe.name = "founder-mail-frame";
+          iframe.id = "founder-mail-frame";
+          iframe.style.cssText = "display:none;width:0;height:0;border:0;";
+          document.body.appendChild(iframe);
+        }
+        var f = document.createElement("form");
+        f.method = "POST";
+        f.action = "https://formsubmit.co/creatorosaisupport@gmail.com";
+        f.target = "founder-mail-frame";
+        f.style.display = "none";
+
+        function field(n, v) {
+          var i = document.createElement("input");
+          i.type = "hidden";
+          i.name = n;
+          i.value = v;
+          f.appendChild(i);
+        }
+        field("name", name);
+        field("email", email);
+        field("_replyto", email);
+        field("_subject", "CreatorOS AI — New Waitlist Registration");
+        field("message",
+          "New waitlist signup for CreatorOS AI\n\n" +
+          "Full Name: " + name + "\n" +
+          "Email: " + email + "\n" +
+          "Timestamp: " + ts + "\n\n" +
+          "Saved in Supabase waitlist table."
+        );
+        field("_template", "table");
+        field("_captcha", "false");
+        field("_honey", "");
+
+        document.body.appendChild(f);
+        f.submit();
+        setTimeout(function () {
+          try { document.body.removeChild(f); } catch (e) {}
+          resolve(true);
+        }, 1500);
+      } catch (err) {
+        console.warn("Founder email notify failed", err);
+        resolve(false);
+      }
+    });
+  }
+  </script>
+<!-- Cloudflare Web Analytics -->
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "1ae6529095944cb0a5dcfb22b1662368"}'></script>
+<!-- End Cloudflare Web Analytics -->
+</body>
+</html>
